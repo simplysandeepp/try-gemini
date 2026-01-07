@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OS Geni | AI Assistant</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            /* Premium Light Theme Palette */
+            --bg-color: #f8fafc;
+            --chat-bg: #ffffff;
+            --primary-color: #4f46e5;
+            /* Indigo-600 */
+            --primary-hover: #4338ca;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+            --user-msg-bg: #4f46e5;
+            --user-text: #ffffff;
+            --bot-msg-bg: #f1f5f9;
+            --bot-text: #334155;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-color);
+            background-image:
+                radial-gradient(at 0% 0%, hsla(253, 16%, 7%, 0) 0, hsla(253, 16%, 7%, 0) 50%),
+                radial-gradient(at 50% 0%, hsla(225, 39%, 30%, 0) 0, hsla(225, 39%, 30%, 0) 50%),
+                radial-gradient(at 100% 0%, hsla(339, 49%, 30%, 0) 0, hsla(339, 49%, 30%, 0) 50%);
+            color: var(--text-primary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            width: 95%;
+            max-width: 900px;
+            height: 92vh;
+            background-color: var(--chat-bg);
+            border-radius: 24px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid white;
+            position: relative;
+        }
+
+        /* Header Styling */
+        header {
+            padding: 24px 32px;
+            border-bottom: 1px solid var(--border-color);
+            background-color: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(12px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .brand {
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            letter-spacing: -0.02em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        h1 svg {
+            color: var(--primary-color);
+            width: 24px;
+            height: 24px;
+        }
+
+        .tagline {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            margin-top: 2px;
+        }
+
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background-color: #f0fdf4;
+            border: 1px solid #dcfce7;
+            border-radius: 20px;
+            color: #166534;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #22c55e;
+            border-radius: 50%;
+            box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2);
+        }
+
+        /* Chat Area */
+        #chat-history {
+            flex: 1;
+            padding: 32px;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+            background-color: #fff;
+            background-image: radial-gradient(#e5e7eb 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        .message-group {
+            margin-bottom: 24px;
+            animation: slideIn 0.3s ease-out;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message-meta {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+            margin-left: 4px;
+            font-weight: 500;
+        }
+
+        .message-content {
+            max-width: 85%;
+            padding: 16px 24px;
+            border-radius: 18px;
+            font-size: 1rem;
+            position: relative;
+            box-shadow: var(--shadow-sm);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .user-group {
+            align-items: flex-end;
+        }
+
+        .user-group .message-content {
+            background-color: var(--user-msg-bg);
+            color: var(--user-text);
+            border-bottom-right-radius: 4px;
+            box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);
+        }
+
+        .user-group .message-meta {
+            margin-right: 4px;
+            text-align: right;
+        }
+
+        .bot-group {
+            align-items: flex-start;
+        }
+
+        .bot-group .message-content {
+            background-color: var(--bot-msg-bg);
+            color: var(--bot-text);
+            border: 1px solid var(--border-color);
+            border-bottom-left-radius: 4px;
+        }
+
+        /* Typography improvements */
+        .bot-group strong {
+            color: var(--text-primary);
+            font-weight: 700;
+        }
+
+        .bot-group ul,
+        .bot-group ol {
+            margin-left: 24px;
+            margin-top: 12px;
+            margin-bottom: 12px;
+        }
+
+        .bot-group li {
+            margin-bottom: 6px;
+        }
+
+        /* Input Area */
+        .input-area {
+            padding: 24px 32px;
+            background-color: white;
+            border-top: 1px solid var(--border-color);
+            position: relative;
+        }
+
+        form {
+            position: relative;
+            display: flex;
+            gap: 16px;
+            background-color: white;
+            border-radius: 16px;
+            padding: 6px;
+            border: 2px solid transparent;
+            box-shadow: 0 0 0 1px var(--border-color), var(--shadow-sm);
+            transition: all 0.2s ease;
+        }
+
+        form:focus-within {
+            box-shadow: 0 0 0 2px var(--primary-color), var(--shadow-md);
+            border-color: transparent;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 12px 16px;
+            border: none;
+            background: transparent;
+            font-family: inherit;
+            font-size: 1rem;
+            color: var(--text-primary);
+            outline: none;
+        }
+
+        input[type="text"]::placeholder {
+            color: #94a3b8;
+        }
+
+        button {
+            padding: 12px 28px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        button:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        button:disabled {
+            background-color: #cbd5e1;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* Loading Animation */
+        .dots-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .dot {
+            width: 5px;
+            height: 5px;
+            background-color: white;
+            border-radius: 50%;
+            animation: pulse 1.5s infinite ease-in-out;
+        }
+
+        .dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 0.4;
+                transform: scale(0.8);
+            }
+
+            50% {
+                opacity: 1;
+                transform: scale(1.2);
+            }
+        }
+
+        .demo-banner {
+            background-color: #f8fafc;
+            color: #64748b;
+            text-align: center;
+            padding: 10px;
+            font-size: 0.8rem;
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 500;
+            letter-spacing: 0.01em;
+        }
+
+        .demo-banner strong {
+            color: var(--primary-color);
+            margin-right: 4px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="demo-banner">
+            🚀 <strong>Demo Project:</strong> Showcase of a simple RAG Chatbot using Gemini & Flask
+        </div>
+        <header>
+            <div class="brand">
+                <h1>
+                    <!-- Icon -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5"></path>
+                        <path d="M8.5 8.5a2.5 2.5 0 0 1 0 5"></path>
+                        <path d="M15.5 15.5a2.5 2.5 0 0 1 0-5"></path>
+                    </svg>
+                    Try Gemini
+                </h1>
+                <span class="tagline">Your Premium AI Operating System Expert</span>
+            </div>
+            <div class="status-badge">
+                <div class="status-dot"></div>
+                <span>Online</span>
+            </div>
+        </header>
+
+        <div id="chat-history">
+            <div class="message-group bot-group">
+                <div class="message-meta">AI Assistant</div>
+                <div class="message-content">
+                    Hello! I'm your dedicated OS expert. I can assist you with:
+                    <ul>
+                        <li>Understanding <strong>Deadlocks & Concurrency</strong></li>
+                        <li>Explaining <strong>Paging & Virtual Memory</strong></li>
+                        <li>analyzing <strong>CPU Scheduling Algorithms</strong></li>
+                    </ul>
+                    What would you like to explore today?
+                </div>
+            </div>
+        </div>
+
+        <div class="input-area">
+            <form id="chat-form">
+                <input type="text" id="user-input" placeholder="Ask about kernel, threads, or memory..."
+                    autocomplete="off">
+                <button type="submit" id="send-btn">
+                    <span>Send</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const chatHistory = document.getElementById('chat-history');
+        const chatForm = document.getElementById('chat-form');
+        const userInput = document.getElementById('user-input');
+        const sendBtn = document.getElementById('send-btn');
+        const sendIcon = sendBtn.innerHTML; // Save original button content
+
+        function formatMessage(text) {
+            return text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\n/g, '<br>');
+        }
+
+        function appendMessage(sender, text, isHtml = false) {
+            const groupDiv = document.createElement('div');
+            groupDiv.classList.add('message-group', sender === 'user' ? 'user-group' : 'bot-group');
+
+            const metaDiv = document.createElement('div');
+            metaDiv.classList.add('message-meta');
+            metaDiv.textContent = sender === 'user' ? 'You' : 'AI Assistant';
+
+            const contentDiv = document.createElement('div');
+            contentDiv.classList.add('message-content');
+
+            if (isHtml) {
+                contentDiv.innerHTML = text;
+            } else {
+                contentDiv.textContent = text;
+            }
+
+            groupDiv.appendChild(metaDiv);
+            groupDiv.appendChild(contentDiv);
+
+            chatHistory.appendChild(groupDiv);
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+
+        async function sendMessage(e) {
+            e.preventDefault();
+            const message = userInput.value.trim();
+            if (!message) return;
+
+            appendMessage('user', message);
+            userInput.value = '';
+
+            userInput.disabled = true;
+            sendBtn.innerHTML = '<div class="dots-container"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
+            sendBtn.disabled = true;
+
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: message })
+                });
+
+                if (!response.ok) throw new Error('Network error');
+
+                const data = await response.json();
+                const formattedResponse = formatMessage(data.response);
+                appendMessage('bot', formattedResponse, true);
+            } catch (error) {
+                console.error('Error:', error);
+                appendMessage('bot', 'Sorry, I encountered an error. Please try again.');
+            } finally {
+                userInput.disabled = false;
+                userInput.focus();
+                sendBtn.innerHTML = sendIcon;
+                sendBtn.disabled = false;
+            }
+        }
+
+        chatForm.addEventListener('submit', sendMessage);
+    </script>
+</body>
+
+</html>
