@@ -1,11 +1,15 @@
 import os
+from dotenv import load_dotenv
 import google.generativeai as genai
 import chromadb
 from chromadb import Documents, EmbeddingFunction, Embeddings
 
 # --- CONFIGURATION ---
-# Replace with your actual API key or set it as an environment variable
-GOOGLE_API_KEY = "AIzaSyDDC5leO5DjHEsWJnb7SZu0tlkvtpRej5U"
+# Load environment variables from .env file
+load_dotenv()
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+if not GOOGLE_API_KEY:
+    raise ValueError("GOOGLE_API_KEY environment variable is not set. Please set it in your .env file.")
 genai.configure(api_key=GOOGLE_API_KEY)
 
 class GeminiEmbeddingFunction(EmbeddingFunction):
